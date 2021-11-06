@@ -56,8 +56,10 @@ export default class LiveChat extends Component {
 				licenseId: this.props.license,
 				clientId: this.props.clientId,
 				redirectUri: this.props.redirectUri,
+				region: this.props.region,
 			})
 			visitorSDK.destroy()
+			this.props.onCustomerLoaded(this.customerSDK)
 		})
 
 		this.props.onLoaded(visitorSDK)
@@ -217,8 +219,9 @@ export default class LiveChat extends Component {
 					pending: false,
 				})
 			})
-			.catch(() => {
-				this.addSystemMessage('Sending message failed')
+			.catch((err) => {
+			console.log(`error sending message ${JSON.stringify(err.message)}`)
+			this.addSystemMessage('Sending message failed')
 			})
 	}
 
@@ -286,14 +289,17 @@ export default class LiveChat extends Component {
 		})
 	}
 
-	initCustomerSdk({ licenseId, clientId, redirectUri }) {
+	initCustomerSdk({ licenseId, clientId, redirectUri, region }) {
 		const config = {
 			licenseId: Number(licenseId, 10),
 			clientId,
 			redirectUri,
 		}
 		if (this.props.group !== null) {
-			config.group = this.props.group
+			config.groupId = this.props.group
+		}
+		if (region) {
+			config.region = region
 		}
 		const customerSDK = CustomerSdkInit(config)
 		this.customerSDK = customerSDK
@@ -398,13 +404,13 @@ export default class LiveChat extends Component {
 			})
 		})
 
-		customerSDK.on('thread_closed', () => {
+		customerSDK.on('chat_deactivated', () => {
 			this.setState({
 				chatActive: false,
 			})
 		})
 
-		sdk.on('incoming_chat_thread', () => {
+		customerSDK.on('incoming_chat', () => {
 			this.setState({
 				chatActive: true,
 			})
@@ -430,10 +436,12 @@ export default class LiveChat extends Component {
 
 	openChat = () => {
 		this.setState({ isChatOn: true })
+		this.props.onChatOpen && this.props.onChatOpen();
 	}
 
 	closeChat = () => {
 		this.setState({ isChatOn: false })
+		this.props.onChatClose && this.props.onChatClose();
 	}
 
 	getHeaderText = () => {
@@ -481,6 +489,7 @@ export default class LiveChat extends Component {
 					onInputChange={this.handleInputChange}
 					disableComposer={this.shouldDisableComposer()}
 					headerText={this.getHeaderText()}
+					renderNavBar={this.props.renderNavBar}
 				/>
 			),
 			<AuthWebView key="auth" />,
@@ -498,6 +507,10 @@ LiveChat.propTypes = {
 	greeting: PropTypes.string,
 	noAgents: PropTypes.string,
 	onLoaded: PropTypes.func,
+	onCustomerLoaded: PropTypes.func,
+	onChatOpen: PropTypes.func,
+	onChatClose: PropTypes.func,
+	renderNavBar: PropTypes.func,
 	clientId: PropTypes.string,
 	redirectUri: PropTypes.string,
 }
@@ -505,12 +518,16 @@ LiveChat.propTypes = {
 LiveChat.defaultProps = {
 	bubbleColor: '#2962FF',
 	bubbleStyles: {
-		position: 'absolute',
-		bottom: 12,
-		right: 12,
+		// We don't need default styling for the bubble
+		// position: 'absolute',
+		// bottom: 12,
+		// right: 12,
 	},
 	movable: true,
 	onLoaded: () => {},
+	onCustomerLoaded: () => {},
+	onChatOpen: () => {},
+	onChatClose: () => {},
 	group: 0,
 	chatTitle: 'Chat with us!',
 	greeting: 'Welcome to our LiveChat!\nHow may We help you?',

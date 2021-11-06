@@ -4,6 +4,7 @@ import { View } from 'react-native-animatable'
 import PropTypes from 'prop-types'
 import { GiftedChat } from 'react-native-gifted-chat'
 import NavigationBar from './NavigationBar'
+import { Modal } from 'react-native'
 
 const { height, width } = Dimensions.get('window')
 const totalSize = (num) => (Math.sqrt(height * height + width * width) * num) / 100
@@ -30,6 +31,16 @@ export default class Chat extends React.Component {
 		return null
 	}
 
+	renderNavBar = () => {
+		const { chatTitle, closeChat, renderNavBar } = this.props;
+
+		if (renderNavBar) {
+			return renderNavBar(closeChat);
+		} else {
+			return <NavigationBar chatTitle={chatTitle} closeChat={closeChat}/>;
+		}
+	}
+
 	render() {
 		const {
 			messages,
@@ -47,31 +58,37 @@ export default class Chat extends React.Component {
 		const isReconnecting = this.props.connectionState !== 'connected'
 		if (isChatOn) {
 			return (
-				<View
-					animation="fadeInUp"
-					style={styles.container}
-					ref={(ref) => {
-						this.chat = ref
-					}}
-				>
-					<NavigationBar chatTitle={chatTitle} closeChat={closeChat} />
-					{isReconnecting && <Text style={styles.connectionStatus}>Reconnecting...</Text>}
-					{headerText && <Text style={styles.status}>{headerText}</Text>}
-					<GiftedChat
-						inverted={false}
-						messages={messages}
-						scrollToBottom
-						renderFooter={this.renderFooter}
-						onSend={this.handleSend}
-						onInputTextChanged={onInputChange}
-						user={customer}
-						isTyping={isTyping}
-						onQuickReply={onQuickReply}
-						disableComposer={disableComposer}
-						showAvatarForEveryMessage={false}
-						{...restProps}
-					/>
-				</View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          hardwareAccelerated={false}>
+          <View
+            // animation="fadeInUp"
+            style={styles.container}
+            ref={(ref) => {
+              this.chat = ref
+            }}
+          >
+						{this.renderNavBar()}
+            {isReconnecting &&
+            <Text style={styles.connectionStatus}>Reconnecting...</Text>}
+            {headerText && <Text style={styles.status}>{headerText}</Text>}
+            <GiftedChat
+              inverted={false}
+              messages={messages}
+              scrollToBottom
+              renderFooter={this.renderFooter}
+              onSend={this.handleSend}
+              onInputTextChanged={onInputChange}
+              user={customer}
+              isTyping={isTyping}
+              onQuickReply={onQuickReply}
+              disableComposer={disableComposer}
+              showAvatarForEveryMessage={false}
+              {...restProps}
+            />
+          </View>
+        </Modal>
 			)
 		}
 		return null
@@ -90,6 +107,7 @@ Chat.propTypes = {
 	onInputChange: PropTypes.func.isRequired,
 	isTyping: PropTypes.bool.isRequired,
 	connectionState: PropTypes.string.isRequired,
+	renderNavBar: PropTypes.func,
 }
 
 const styles = StyleSheet.create({

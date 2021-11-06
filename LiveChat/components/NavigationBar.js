@@ -14,7 +14,6 @@ export default class NavigationBar extends Component {
 				<Text style={styles.title}>{this.props.chatTitle}</Text>
 				<TouchableOpacity style={styles.back} onPress={this.props.closeChat}>
 					<Image key={Math.random()} source={backImage} style={styles.backIcon} resizeMode="stretch" />
-					<Text style={styles.backText}>Back</Text>
 				</TouchableOpacity>
 			</View>
 		)
@@ -24,8 +23,8 @@ export default class NavigationBar extends Component {
 const styles = StyleSheet.create({
 	navBar: {
 		height: Platform.OS === 'ios' ? height / 11 : height / 12,
-		backgroundColor: '#eee',
-		borderBottomColor: '#b2b2b2',
+		backgroundColor: '#fff',
+		borderBottomColor: '#fff',
 		borderBottomWidth: 1,
 		flexDirection: 'row',
 		paddingTop: Platform.OS === 'ios' ? height / 25 : height / 40,
@@ -44,13 +43,16 @@ const styles = StyleSheet.create({
 		paddingLeft: width / 40,
 	},
 	title: {
-		color: '#444',
-		fontSize: totalSize(2.1),
-		fontWeight: '600',
+		color: '#FFAB50',
+		// fontSize: totalSize(2.1),
+		fontWeight: '500',
 		position: 'absolute',
 		width,
 		textAlign: 'center',
 		backgroundColor: 'transparent',
+		// textTransform: 'uppercase',
+		fontFamily: 'Circular Std',
+		fontSize: 18,
 		paddingTop: Platform.OS === 'ios' ? height / 25 : height / 40,
 	},
 })
